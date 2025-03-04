@@ -18,9 +18,8 @@ const {PutObjectCommand} = require('@aws-sdk/client-s3');
 
 const createDistributor = asyncHandler(async (req, res) => {
   const {
-    roleId,
-    firstName,
-    lastName,
+    roleid,
+    aadharName,
     mobile,
     email,
     password,
@@ -31,6 +30,27 @@ const createDistributor = asyncHandler(async (req, res) => {
     comments,
     create,
     update,
+    dob,
+    gender,
+    address,
+    state,
+    district,
+    pincode,
+    panName,
+    businessName,
+    businessCategory,
+    businessAddress,
+    businessState,
+    businessDistrict,
+    businessPincode,
+    businessLabourLicenseNumber,
+    businessProprietorName,
+    bankName,
+    accountNumber,
+    IFSC,
+    accountName,
+    doj,
+    ditributorMargin,
   } = req.body;
   console.log(req.body);
 
@@ -70,7 +90,9 @@ const createDistributor = asyncHandler(async (req, res) => {
   if(files.aadharUrl) aadharUrl= await uploadToS3(files.aadharUrl);
   if(files.panUrl) panUrl= await uploadToS3(files.panUrl);
   if(files.profileUrl) profileUrl= await uploadToS3(files.profileUrl);
-  if(files.signatureUrl) signatureUrl= await uploadToS3(files.signatureUrl);
+  if(files.businessUrl) businessUrl= await uploadToS3(files.businessUrl);
+  if(files.shopImageUrl) shopImageUrl= await uploadToS3(files.shopImageUrl);
+  if(files.cancelledCheckUrl) cancelledCheckUrl= await uploadToS3(files.cancelledCheckUrl);
   const findCustomerSql =
     "select user_mobile,aadhar_number from distributor where user_mobile=? and aadhar_number=?";
   const customerExist = await new Promise((resolve, reject) => {
@@ -88,7 +110,7 @@ const createDistributor = asyncHandler(async (req, res) => {
     throw new Error("Dealer or Retailer already exists");
   }
   const createUserSql =
-    "INSERT INTO distributor ( distributor_id,role_id,first_name,last_name,user_mobile,user_email,user_password,aadhar_number,aadhar_url,pan_number,pan_url,profile_url,signature_url,doj,kyc_status,comments,updated_timestamp) VALUES (?,?,?, ?,?,?,?,?,?,?, ?, ?, ?, ?,?,?,?);";
+    "INSERT INTO distributor ( distributor_id,role_id,user_type,name_as_per_aadhaar,aadhar_number,dob,gender,address,state,district,pincode,user_mobile,user_email,user_password,aadhar_url,pan_number,name_as_per_pan,pan_url,business_name,business_category,business_address,business_state,business_district,business_pincode,business_labour_license_Number,business_proprietor_Name,shop_photo_url,business_ll_url,profile_photo_url,bank_name,account_number,ifsc_code,account_holder_name,cancelled_check_url,doj,kyc_status,comments,distributor_margin,created_timestamp,updated_timestamp) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
    function generateUserId(userType,mobile) {
     return new Promise((resolve, reject) => {
@@ -126,21 +148,44 @@ if (distributorExist) {
       createUserSql,
       [
         distributorId,
-        roleId,
-        firstName,
-        lastName,
+        roleid,
+        userType,
+        aadharName,
+        aadharNumber,
+        dob,
+        gender,
+        address,
+        state,
+        district,
+        pincode,
         mobile,
         email,
         password,
-        aadharNumber,
         aadharUrl,
         panNumber,
+        panName,
         panUrl,
+        businessName,
+        businessCategory,
+        businessAddress,
+        businessState,
+        businessDistrict,
+        businessPincode,
+        businessLabourLicenseNumber,
+        businessProprietorName,
+        shopImageUrl,
+        businessUrl,
         profileUrl,
-        signatureUrl,
-        create,
+        bankName,
+        accountNumber,
+        IFSC,
+        accountName,
+        cancelledCheckUrl,
+        doj,
         status,
         comments,
+        ditributorMargin,
+        create,
         update,
       ],
       (err, result) => {

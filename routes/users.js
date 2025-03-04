@@ -51,7 +51,7 @@ const authUser = asyncHandler(async(req,res)=>{
   const {userid,password} = req.body
   console.log(req.cookies);
   
-    const authSql = 'select user_id,user_password,user_email,role_id from login where user_id=? '
+    const authSql = 'select user_id,user_password,user_email,Role from login l join user_roles ur on l.role_id=ur.ID where user_id=? '
     try {
       const user = await new Promise((resolve,reject)=>{
         db.query(authSql,[userid],(err,result)=>{
@@ -74,7 +74,7 @@ const authUser = asyncHandler(async(req,res)=>{
         message:'Authentication Successfull',
         id:user.user_id,
         email:user.user_email,
-        role:user.role_id,
+        role:user.Role,
       })
     } catch (error) {
       res.status(500).json({message:'Authentication Failed'})

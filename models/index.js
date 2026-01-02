@@ -5,6 +5,7 @@ const { sequelize } = require("../config/db");
 const User = require("./User")(sequelize, DataTypes);
 const UserRole = require("./UserRole")(sequelize, DataTypes);
 const UserAudit = require("./UserAudit")(sequelize, DataTypes);
+const Superdistributor = require("./Superdistributor")(sequelize, DataTypes);
 const Distributor = require("./Distributor")(sequelize, DataTypes);
 const Retailer = require("./Retailer")(sequelize, DataTypes);
 const Transaction = require('./Transaction')(sequelize,DataTypes)
@@ -38,6 +39,7 @@ module.exports = {
   Wallet,
   Contact,
   UserAudit,
+  Superdistributor,
   Distributor,
   Retailer,
   BankDetails,

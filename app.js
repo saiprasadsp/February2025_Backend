@@ -8,6 +8,7 @@ const dotenv = require('dotenv')
 const {notFound,errorHandler} = require('./middleware/errorMiddleware')
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const superdistributorRouter = require('./routes/superdistributor')
 const distributorRouter = require('./routes/distributor')
 const retailerRouter = require('./routes/retailer')
 const dashboardRouter = require('./routes/dashboard')
@@ -48,6 +49,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api', indexRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/superdistributor', superdistributorRouter);
 app.use('/api/distributor', distributorRouter);
 app.use('/api/retailer', retailerRouter);
 app.use('/api/dashboard', dashboardRouter);

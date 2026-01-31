@@ -8,13 +8,13 @@ const UserAudit = require("./UserAudit")(sequelize, DataTypes);
 const Superdistributor = require("./Superdistributor")(sequelize, DataTypes);
 const Distributor = require("./Distributor")(sequelize, DataTypes);
 const Retailer = require("./Retailer")(sequelize, DataTypes);
+const Reports = require("./Reports")(sequelize, DataTypes);
 const Transaction = require('./Transaction')(sequelize,DataTypes)
 const Wallet = require('./Wallet')(sequelize,DataTypes)
 const Contact = require('./Contact')(sequelize,DataTypes)
 const BankDetails = require('./BankDetails')(sequelize,DataTypes)
 const CardDetails = require('./CardDetails')(sequelize,DataTypes)
 const Payments = require('./Payments')(sequelize,DataTypes)
-
 
 // Define associations
 User.belongsTo(UserRole, { foreignKey: "role_id" });
@@ -42,6 +42,7 @@ module.exports = {
   Superdistributor,
   Distributor,
   Retailer,
+  Reports,
   BankDetails,
   CardDetails,
   Payments

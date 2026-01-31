@@ -11,6 +11,7 @@ const usersRouter = require('./routes/users');
 const superdistributorRouter = require('./routes/superdistributor')
 const distributorRouter = require('./routes/distributor')
 const retailerRouter = require('./routes/retailer')
+const reportsRouter = require('./routes/reporter')
 const dashboardRouter = require('./routes/dashboard')
 const paymentsRouter = require('./routes/payments')
 const cashFreeAPI = require('./routes/cashfree')
@@ -52,6 +53,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/superdistributor', superdistributorRouter);
 app.use('/api/distributor', distributorRouter);
 app.use('/api/retailer', retailerRouter);
+app.use('/api/reporter', reportsRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/payments', paymentsRouter);
 app.use('/api/cashfree',cashFreeAPI)

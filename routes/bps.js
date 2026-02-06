@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const asyncHandler = require("express-async-handler");
 const protect = require("../config/authMiddleware");
-
+const apiPermit = require("../config/apilocks")
 function generateRandomAlphanumeric(length) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -213,7 +213,7 @@ const txn_status = asyncHandler(async (req,res,next) => {
    }
 
 })
-router.get("/", protect, categories);
+router.get("/", protect,apiPermit ,categories);
 router.post("/biller", protect, biller);
 router.post("/billerDetails", protect, billerDetails);
 router.post("/billerEnquiry", protect, billerEnquiry);

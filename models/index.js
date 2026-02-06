@@ -15,6 +15,7 @@ const Contact = require('./Contact')(sequelize,DataTypes)
 const BankDetails = require('./BankDetails')(sequelize,DataTypes)
 const CardDetails = require('./CardDetails')(sequelize,DataTypes)
 const Payments = require('./Payments')(sequelize,DataTypes)
+const ApiPermit = require('./APIPermission')(sequelize,DataTypes)
 
 // Define associations
 User.belongsTo(UserRole, { foreignKey: "role_id" });
@@ -45,5 +46,6 @@ module.exports = {
   Reports,
   BankDetails,
   CardDetails,
-  Payments
+  Payments,
+  ApiPermit
 };

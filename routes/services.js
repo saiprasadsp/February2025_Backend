@@ -1,14 +1,24 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const asyncHandler = require('express-async-handler')
-const protect = require('../config/authMiddleware')
-const db = require('../config/db')
-const bcrypt = require('bcryptjs')
+const asyncHandler = require("express-async-handler");
+const protect = require("../config/authMiddleware");
+const db = require("../config/db");
+const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
-const { where } = require('sequelize');
-const { User } = require('../models');
+const { where } = require("sequelize");
+const { User, ApiPermit } = require("../models");
 
+const formattedDate = (value) => {
+  const date = new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
 
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -18,10 +28,8 @@ const transporter = nodemailer.createTransport({
   },
   tls: {
     rejectUnauthorized: false, // ⛔ not recommended for production
-  }
-
+  },
 });
-
 
 transporter.verify((err, success) => {
   if (err) {
@@ -31,21 +39,20 @@ transporter.verify((err, success) => {
   }
 });
 
+const forgotPassword = asyncHandler(async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findOne({ where: { user_id: userId } });
 
-const forgotPassword = asyncHandler(async(req,res)=>{
-    try {
-        const {userId} = req.body
-        const user = await User.findOne({where:{user_id:userId}})
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
-        if (!user ) {
-            return res.status(404).json({message:'User not found'})
-        }
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
-
-        user.otp=otp
-        user.otp_expiry=otpExpiry
-        await user.save()
+    user.otp = otp;
+    user.otp_expiry = otpExpiry;
+    await user.save();
 
     await transporter.sendMail({
       from: process.env.EMAIL,
@@ -55,45 +62,42 @@ const forgotPassword = asyncHandler(async(req,res)=>{
     });
 
     res.status(200).json({ message: "OTP sent to your email" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({message:'Server error'})
-
-    }
-})
-
-const verify = asyncHandler(async (req,res) => {
-    try {
+const verify = asyncHandler(async (req, res) => {
+  try {
     const { userId, otp } = req.body;
-    const user = await User.findOne({ where: { user_id:userId } });
+    const user = await User.findOne({ where: { user_id: userId } });
 
     if (!user) return res.status(404).json({ message: "User not found" });
-    if (user.otp !== otp) return res.status(400).json({ message: "Invalid OTP" });
-    if (user.otp_expiry < new Date()) return res.status(400).json({ message: "OTP expired" });
+    if (user.otp !== otp)
+      return res.status(400).json({ message: "Invalid OTP" });
+    if (user.otp_expiry < new Date())
+      return res.status(400).json({ message: "OTP expired" });
 
     res.json({ message: "OTP verified successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
+});
 
-
-})
-
-const resetPassword = asyncHandler(async (req,res) => {
-    try {
+const resetPassword = asyncHandler(async (req, res) => {
+  try {
     const { userId, password } = req.body;
-    const user = await User.findOne({ where: { user_id:userId } });
+    const user = await User.findOne({ where: { user_id: userId } });
     console.log(user);
-
 
     if (!user) return res.status(404).json({ message: "User not found" });
     // if (user.otp !== otp) return res.status(400).json({ message: "Invalid OTP" });
     // if (user.otp_expiry < new Date()) return res.status(400).json({ message: "OTP expired" });
 
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(password,salt)
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     user.user_password = hashedPassword;
     // user.otp = null;
@@ -105,10 +109,39 @@ const resetPassword = asyncHandler(async (req,res) => {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
+});
+const apiLock = asyncHandler(async (req, res, next) => {
+  const { userId, status } = req.body;
+  console.log(req.body);
 
-})
+  let locked = status != "true" ? "Un-Locked" : "Locked";
 
-router.post('/forgot-password',forgotPassword)
-router.post('/verify',verify)
-router.post('/reset-password',resetPassword)
-module.exports=router;
+  try {
+    const [permit, created] = await ApiPermit.findOrCreate({
+      where: {
+        user_id: userId,
+      },
+      defaults: {
+        status: status,
+        created_at: formattedDate(new Date().toISOString()),
+        updated_at: formattedDate(new Date().toISOString()),
+      },
+    });
+    if (!created) {
+      await permit.update({
+        status:status,
+        updated_at: formattedDate(new Date().toISOString()),
+
+      })
+    }
+
+    return res.status(201).json({ message: `User Api ${locked} successfully` });
+  } catch (err) {
+    console.log(err);
+  }
+});
+router.post("/forgot-password", forgotPassword);
+router.post("/verify", verify);
+router.post("/reset-password", resetPassword);
+router.post("/api-lock", apiLock);
+module.exports = router;

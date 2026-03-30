@@ -5,7 +5,7 @@ const protect = require("../config/authMiddleware");
 const db = require("../config/db");
 const { Cashfree, CFEnvironment } = require("cashfree-pg");
 const { where, Op } = require("sequelize");
-const { Transaction, Wallet, Payments } = require("../models");
+const { Transaction, Wallet, Payments, GateWays } = require("../models");
 const { User } = require("../models");
 const cashfree = new Cashfree(
   CFEnvironment.SANDBOX,
@@ -273,10 +273,67 @@ const getPayInReports = asyncHandler(async (req, res) => {
   }
 });
 
+const getGateWays = asyncHandler(async (req, res) => {
+  try {
+    const data = await GateWays.findAll();
+    res.send(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+const addGateWays = asyncHandler(async (req, res) => {
+  const { name, super_distributor, distributor, retailer } = req.body;
+  console.log(req.body);
+
+  try {
+    const createGateWay = await GateWays.create({
+      name: name,
+      super_distributor: super_distributor,
+      distributor: distributor,
+      retailer: retailer,
+      code: name.toLowerCase().replace(/\s+/g, ""),
+    });
+
+    res
+      .status(200)
+      .json({ message: "GateWays Created Successfully", data: createGateWay });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+const updateGateWays = asyncHandler(async (req, res) => {
+  const { id, name, super_distributor, distributor, retailer } = req.body;
+  console.log(req.body);
+
+  try {
+    const updateGateWay = await GateWays.update(
+      {
+        name: name,
+        super_distributor: super_distributor,
+        distributor: distributor,
+        retailer: retailer,
+        code: name.toLowerCase().replace(/\s+/g, ""),
+      },
+      { where: { id } },
+    );
+    res
+      .status(200)
+      .json({ message: "GateWays Updated Successfully", data: updateGateWay });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
 router.post("/", protect, createOrder);
 router.post("/payment-status", protect, paymentStatus);
 router.post("/orders", protect, orderHistory);
 router.post("/passbook", protect, logTransaction);
 router.post("/filter-order", protect, getPayInReports);
+router.post("/gateway-charges", protect, getGateWays);
+router.post("/gateway-charges/create", protect, addGateWays);
+router.put("/gateway-charges/update", protect, updateGateWays);
 
 module.exports = router;

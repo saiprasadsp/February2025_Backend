@@ -16,7 +16,7 @@ const BankDetails = require('./BankDetails')(sequelize,DataTypes)
 const CardDetails = require('./CardDetails')(sequelize,DataTypes)
 const Payments = require('./Payments')(sequelize,DataTypes)
 const ApiPermit = require('./APIPermission')(sequelize,DataTypes)
-
+const GateWays = require('./GateWays')(sequelize,DataTypes)
 // Define associations
 User.belongsTo(UserRole, { foreignKey: "role_id" });
 UserRole.hasMany(User, { foreignKey: "role_id" });
@@ -47,5 +47,6 @@ module.exports = {
   BankDetails,
   CardDetails,
   Payments,
-  ApiPermit
+  ApiPermit,
+  GateWays
 };

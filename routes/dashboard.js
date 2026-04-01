@@ -4,7 +4,14 @@ const asyncHandler = require('express-async-handler')
 const db = require('../config/db')
 const bcrypt = require('bcryptjs')
 const protect = require('../config/authMiddleware');
-const { Retailer, Distributor, Wallet } = require('../models');
+const { Retailer, Distributor, Wallet, Payments } = require('../models');
+const { Op } = require('sequelize');
+
+const start = new Date();
+start.setHours(0, 0, 0, 0); // 00:00:00
+
+const end = new Date();
+end.setHours(23, 59, 59, 999);
 
 const getDashboard = asyncHandler(async (req, res) => {
   try {
@@ -28,11 +35,15 @@ const getDashboard = asyncHandler(async (req, res) => {
       const totalDistributor = await Distributor.count();
       const totalRetailer = await Retailer.count();
       const totalPending = await Retailer.count({ where: { kyc_status: "Pending" } });
+      const totalBalance = await Wallet.sum("wallet_balance")
+      const totalPayIns = await Payments.count({where:{payment_date:{[Op.between]:[start,end]}}})
 
       dashboardData = [{
         total_distributor: totalDistributor,
         total_retailer: totalRetailer,
         total_pending: totalPending,
+        total_balance:totalBalance,
+        total_payins: totalPayIns
       }];
     }
 

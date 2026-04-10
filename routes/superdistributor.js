@@ -169,7 +169,7 @@ const createDistributor = asyncHandler(async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // ✅ Create distributor
+    // ✅ Create super distributor
     await Superdistributor.create({
       superdistributor_id: superdistributorId,
       role_id: roleid,
